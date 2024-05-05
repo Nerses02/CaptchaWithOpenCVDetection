@@ -75,6 +75,6 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE) f
 
 ## Contact
 
-Nerses Manukyan - YourEmail@example.com
+Nerses Manukyan - ner.manukyan@gmail.com
 
 Project Link: [https://github.com/Nerses02/CaptchaWithOpenCVDetection.git](https://github.com/Nerses02/CaptchaWithOpenCVDetection.git)
