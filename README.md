@@ -27,12 +27,13 @@ pip install flask opencv-python numpy
 ```
 project/
 │
-├── app.py            # Backend Flask application
-├── index.html        # Frontend HTML file
-├── static/           # Static files directory
+├── model/              # object detection model and tools 
+├── app.py              # Backend Flask application
+├── index.html          # Frontend HTML file
+├── static/             # Static files directory
 │   └── background.png  # Background image for the webpage
 │
-└── README.md         # Documentation file
+└── README.md           # Documentation file
 ```
 
 ## Setup and Running the Application
