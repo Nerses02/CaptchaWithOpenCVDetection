@@ -27,7 +27,7 @@ def create_color_histogram(image, bins=8):
 
 # Example training data preparation
 features = []
-labels = []  # You need to define labels for your images
+labels = []
 
 entries = os.listdir("static/photocamera")
 imageFiles = [entry for entry in entries if os.path.isfile(os.path.join("static/photocamera", entry))]

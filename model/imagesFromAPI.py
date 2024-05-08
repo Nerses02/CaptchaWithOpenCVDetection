@@ -28,7 +28,7 @@ for page in range(1, total_pages + 1):
         'query': query,
         'client_id': access_key,
         'per_page': per_page,
-        'page': page  # Page number in pagination
+        'page': page
     }
 
     response = requests.get(url, params=params)

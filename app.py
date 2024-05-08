@@ -32,6 +32,18 @@ def get_random_images():
             used_images.add(image_path)
     return images
 
+def get_random_image():
+    category = random.choice(categories)
+    directory_path = f'static/{category}'
+    image_files = [f for f in os.listdir(directory_path) 
+                    if os.path.isfile(os.path.join(directory_path, f)) 
+                    and f"{category}/{f}" not in used_images]
+    if image_files:
+        random_image = random.choice(image_files)
+        image_path = f"{category}/{random_image}"
+        used_images.add(image_path)
+    return image_path
+
 def create_color_histogram(image_path, bins=8):
     img = cv2.imread(image_path)
     if img is None:
@@ -55,6 +67,11 @@ def home():
 def reload_images():
     images = get_random_images()
     return jsonify(images=images)
+
+@app.route('/load_single_image', methods=['POST'])
+def load_single_image():
+    image = get_random_image()
+    return jsonify(image=image)
 
 @app.route('/image_click', methods=['POST'])
 def image_click():

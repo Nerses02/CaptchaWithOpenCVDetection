@@ -88,78 +88,128 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-        loadImages();
-        loadInstruction();
+            loadImages();
+            loadInstruction();
 
-        document.getElementById('captcha').addEventListener('click', function(event) {
-            if (event.target.tagName === 'IMG') {
-                let imagePath = event.target.src.split('/').slice(3).join('/');
-                // Send the image path to the server
-                fetch('/image_click', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({image: imagePath})
-                }).then(response => response.json())
-                    .then(data => {
-                    event.target.style.opacity = '0';
-                    setTimeout(function() { loadSingleImage(event.target); }, 500);
-                });
+            document.getElementById('captcha').addEventListener('click', function(event) {
+                if (event.target.tagName === 'IMG') {
+                    let imagePath = event.target.src.split('/').slice(3).join('/');
+                    // Send the image path to the server
+                    fetch('/image_click', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({image: imagePath})
+                    }).then(response => response.json())
+                        .then(data => {
+                        event.target.style.opacity = '0';
+                        loadSingleImage(event.target);
+                    });
+                }
+            });
+
+            let mouseEvents = [];
+            const maxEvents = 100; // Limit the number of events to store
+
+            document.addEventListener('mousemove', function(event) {
+                if (mouseEvents.length < maxEvents) {
+                    mouseEvents.push({
+                    type: 'move',
+                    x: event.clientX,
+                    y: event.clientY,
+                    timestamp: Date.now()
+                    });
+                }
+            });
+
+            // Function to analyze movements
+            function analyzeMovements() {
+                let isRobot = "not robot";
+                let consecutiveStraightLines = 0;
+                let consecutiveSameX = 0;
+                let consecutiveSameY = 0;
+                let lastDirection = null;
+                
+                for (let i = 1; i < mouseEvents.length; i++) {
+                    const dx = mouseEvents[i].x - mouseEvents[i-1].x;
+                    const dy = mouseEvents[i].y - mouseEvents[i-1].y;
+                    const direction = Math.atan2(dy, dx);
+
+                    // Check if the movement continues in the same direction
+                    if (lastDirection !== null && Math.abs(direction - lastDirection) < 0.1) {
+                        consecutiveStraightLines++;
+                    } else {
+                        consecutiveStraightLines = 0; // Reset if the direction changes significantly
+                    }
+                    lastDirection = direction;
+
+                    // Break early if high confidence of robotic behavior
+                    if (consecutiveStraightLines > 30) {
+                        isRobot = "robot with straightLines";
+                        break;
+                    }
+                }
+
+                mouseEvents = []
+
+                console.log('Robot Check: ', isRobot);
             }
-        });
-    });
 
-    function loadImages() {
-        fetch('/reload_images', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                const grid = document.getElementById('captcha');
-                grid.innerHTML = '';
-                data.images.forEach(image => {
-                    const div = document.createElement('div');
-                    div.className = 'image-cell';
-                    const img = document.createElement('img');
-                    img.src = `static/${image}`;
-                    img.alt = 'Captcha Image';
-                    div.appendChild(img);
-                    grid.appendChild(div);
+            // Periodically analyze the mouse movements
+            setInterval(analyzeMovements, 500); // Analyze every 5 seconds
+        });
+
+        function loadImages() {
+            fetch('/reload_images', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    const grid = document.getElementById('captcha');
+                    grid.innerHTML = '';
+                    data.images.forEach(image => {
+                        const div = document.createElement('div');
+                        div.className = 'image-cell';
+                        const img = document.createElement('img');
+                        img.src = `static/${image}`;
+                        img.alt = 'Captcha Image';
+                        div.appendChild(img);
+                        grid.appendChild(div);
+                    });
                 });
+        }
+
+        function loadInstruction() {
+            fetch('/load_instruction', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('instruction').textContent = data.message;
+                });
+        }
+
+        function loadSingleImage(imgElement) {
+            fetch('/load_single_image', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    imgElement.src = `static/${data.image}`;
+                    setTimeout(() => { imgElement.style.opacity = '1' }, 400);
+                });
+        }
+
+        function confirmSelection() {
+            const images = Array.from(document.querySelectorAll('.image-cell img')).map(img => img.src.split('/').slice(3).join('/'));
+            fetch('/submit_images', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({activImages: images})
+            }).then(response => response.json())
+                .then(data => {
+                document.getElementById('response').textContent = data.message;
             });
-    }
+        }
 
-    function loadInstruction() {
-        fetch('/load_instruction', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('instruction').textContent = data.message;
-            });
-    }
-
-    function loadSingleImage(imgElement) {
-        fetch('/reload_images', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                imgElement.src = `static/${data.images[0]}`;
-                imgElement.style.opacity = '1';
-            });
-    }
-
-    function confirmSelection() {
-        const images = Array.from(document.querySelectorAll('.image-cell img')).map(img => img.src.split('/').slice(3).join('/'));
-        fetch('/submit_images', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({activImages: images})
-        }).then(response => response.json())
-            .then(data => {
-            document.getElementById('response').textContent = data.message;
-        });
-    }
-
-    function skipSelection() {
-        document.getElementById('response').textContent = "Skipped!";
-        loadImages();
-        loadInstruction();
-    }
+        function skipSelection() {
+            document.getElementById('response').textContent = "Skipped!";
+            loadImages();
+            loadInstruction();
+        }
     </script>
 </body>
 </html>
