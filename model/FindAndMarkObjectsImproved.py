@@ -96,11 +96,7 @@ def find_group_bounding_box(image_path, proximity_threshold, min_width, min_heig
             cv2.putText(contour_img, label, (x_min+5, y_min+20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
     # Display image
-    cv2.imshow('Grouped Contours with Labels', contour_img)
-
-    # Wait for key press
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv2.imshow(image_path, contour_img)
 
 def is_close(box1, box2, threshold):
     # Calculate center of each box
@@ -111,4 +107,9 @@ def is_close(box1, box2, threshold):
     return dist < threshold
 
 # Usage example
-find_group_bounding_box('static/cat/image_18.jpg', 50, 70, 70, "model/colorKnnModelCatsAndPhotocamera.xml")
+for img_id in range(20):
+    find_group_bounding_box(f'static/photocamera/image_{img_id}.jpg', 50, 70, 70, "model/colorKnnModelCatsAndPhotocamera.xml")
+
+# Wait for key press
+cv2.waitKey(0)
+cv2.destroyAllWindows()

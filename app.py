@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 # Assume images are stored in static/cat, static/photocamera, static/other
 categories = ['cat', 'photocamera', 'other']
-instructions = ['Please click each image containing a photocamera. If there are none, click Skip.', 
+instructions = ['Please click each image containing a camera. If there are none, click Skip.', 
                 'Please click each image containing a cat. If there are none, click Skip.']
 instructionIndex = 0
 used_images = set()
